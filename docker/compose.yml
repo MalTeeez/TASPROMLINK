@@ -1,0 +1,36 @@
+services:
+  grafana:
+    user: "1000:1000"
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    restart: unless-stopped
+    volumes:
+      - "./grafana:/var/lib/grafana"  #owned by 1000:1000
+      - "./grafana.ini:/etc/grafana/grafana.ini"
+    ports:
+      - "3000:3000"
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.size=20GB'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus-data:/prometheus  #owned by 65534:65534
+
+  java:
+    image: tpl_java
+    container_name: java
+    restart: unless-stopped
+    privileged: true
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.0.0/24

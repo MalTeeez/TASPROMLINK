@@ -1,0 +1,23 @@
+{
+  "StatusSNS": {
+    "Time": "1970-01-01T07:26:29",
+    "SML": {
+      "server_id": "0a01484c590200035161",
+      "export_total_kwh": 0,
+      "total_kwh": 33240.3939,
+      "curr_w": 625,
+      "volt_p1": 229.2,
+      "volt_p2": 229.6,
+      "volt_p3": 227.6,
+      "amp_p1": 1.2,
+      "amp_p2": 1.9,
+      "amp_p3": 0.4,
+      "phase_angle_l2_l1": 240,
+      "phase_angle_l3_l1": 120,
+      "phase_angle_p1": 331,
+      "phase_angle_p2": 319,
+      "phase_angle_p3": 304,
+      "freq": 50
+    }
+  }
+}
