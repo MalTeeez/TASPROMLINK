@@ -1,64 +1,79 @@
 package net.sxmaa.datasource;
 
-import com.pi4j.Pi4J;
-import com.pi4j.io.gpio.digital.DigitalInput;
-import com.pi4j.io.gpio.digital.DigitalInputProvider;
-import com.pi4j.io.gpio.digital.PullResistance;
-
-import java.text.SimpleDateFormat;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GasGPIOSource {
 
-    public static final int DIGITAL_INPUT_PIN = 23;
-    private DigitalInput INPUT;
+    public static final int DIGITAL_INPUT_PIN = 16;
 
-    private long last_millis;
+
+    private boolean last_state = false;
     private long current_count = 0;
+    private ScheduledExecutorService scheduler;
 
     public GasGPIOSource() {
-           initGPIOProvider();
-           initGPIOListener();
-    }
-
-    private void initGPIOProvider() {
-        var pi4j = Pi4J.newAutoContext();
-
-        // create a digital input instance using the default digital input provider
-        // we will use the PULL_DOWN argument to set the pin pull-down resistance on this GPIO pin
-        var config = DigitalInput.newConfigBuilder(pi4j)
-                //.id("my-digital-input")
-                .address(DIGITAL_INPUT_PIN)
-                .pull(PullResistance.PULL_DOWN)
-                .build();
-
-        // get a Digital Input I/O provider from the Pi4J context
-        DigitalInputProvider digitalInputProvider = pi4j.provider("pigpio-digital-input");
-
-        INPUT = digitalInputProvider.create(config);
-
-        last_millis = System.currentTimeMillis();
-    }
-
-    private void initGPIOListener() {
-        // setup a digital output listener to listen for any state changes on the digital input
-        INPUT.addListener(event -> {
-            Integer count = (Integer) event.source().metadata().get("count").value();
-            System.out.println(event + " === " + count);
-            // only count this value
-            if (System.currentTimeMillis() - last_millis >= 100) {
-                System.out.println("[" +
-                        new SimpleDateFormat("dd.MM.yy HH:mm:ss")
-                                .format(new java.util.Date()) +
-                        "] We would have only counted this: " + count
-                );
-                current_count++;
+        scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(() -> {
+            boolean state = readPIN();
+            if (state != last_state) {
+                System.out.println("State changed! Current count: " + current_count);
+                current_count = current_count + 1;
             }
-        });
+            last_state = state;
+        }, 1, 10L, TimeUnit.MILLISECONDS);
+    }
+
+    public void disable() {
+        scheduler.shutdownNow();
     }
 
     public Long getAndResetGasCount() {
         final long temp_store = current_count;
         current_count = 0;
         return temp_store;
+    }
+
+    private Boolean readPIN() {
+        boolean result = false;
+        Runtime r = Runtime.getRuntime();
+        Process p = null;
+        try {
+            p = r.exec("pinctrl get " + DIGITAL_INPUT_PIN);
+            p.waitFor();
+        } catch (Exception e) {
+            System.err.println("Error while reading GPIO Pin " + DIGITAL_INPUT_PIN + ": " + e.getMessage());
+        }
+
+        if (p != null) {
+            BufferedReader b = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line = null;
+
+            try {
+                while ((line = b.readLine()) != null) {
+                    sb.append(line);
+                }
+
+                b.close();
+
+                Pattern pattern = Pattern.compile("\\d{1,2}:\\s*ip\\s*pd\\s*\\|\\s*(hi|lo)\\s//\\s*GPIO\\d{1,2}\\s*=\\s*input");
+                Matcher matcher = pattern.matcher(sb.toString());
+
+                if (matcher.find(1)) {
+                    String state = matcher.group(1);
+                    return state.equals("lo");
+                }
+            } catch (Exception e) {
+                System.out.println("Error while sending system command: " + e.getMessage());
+            }
+
+        }
+        return result;
     }
 }

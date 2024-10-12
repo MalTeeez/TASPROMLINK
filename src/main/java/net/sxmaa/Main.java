@@ -26,6 +26,8 @@ public class Main {
         try {
             Thread.currentThread().join();
         } catch (InterruptedException e) {
+            gpioSource.disable();
+
             http_server.close();
             System.out.println("Exiting, Goodbye!");
         }
@@ -36,8 +38,8 @@ public class Main {
         String address = "0.0.0.0";
         try {
             http_server = new HTTPServer(address, port, true);
-            System.out.print(new SimpleDateFormat("dd.MM.yy HH:mm:ss").format(new java.util.Date()));
-            System.out.println("HTTPServer listening on http://" + "localhost:" + http_server.getPort() + "/metrics");
+            System.out.print("[" + new SimpleDateFormat("dd.MM.yy HH:mm:ss").format(new java.util.Date()) + "] ");
+            System.out.println("HTTPServer listening on http://" + address + ":" + http_server.getPort() + "/metrics");
         } catch (BindException e) {
             System.out.println("Failed to start prometheus link, port " + port + " already in use.");
         }

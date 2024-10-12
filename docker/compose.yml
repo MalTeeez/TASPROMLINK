@@ -19,13 +19,17 @@ services:
       - '--storage.tsdb.retention.size=20GB'
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./prometheus-data:/prometheus  #owned by 65534:65534
+      - prometheus:/prometheus  #owned by 65534:65534
 
   java:
     image: tpl_java
     container_name: java
     restart: unless-stopped
-    privileged: true
+    devices:
+      - /dev/gpiomem:/dev/gpiomem
+
+volumes:
+  prometheus:
 
 networks:
   default:

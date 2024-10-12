@@ -27,15 +27,6 @@ dependencies {
     implementation("io.prometheus:simpleclient_hotspot:0.16.0")
     implementation("io.prometheus:simpleclient_httpserver:0.16.0")
     implementation("io.prometheus:simpleclient_pushgateway:0.16.0")
-
-
-    shadowRuntimeElements 'com.pi4j:pi4j-core:2.6.0'
-    shadowRuntimeElements 'com.pi4j:pi4j-plugin-raspberrypi:2.6.0'
-    shadowRuntimeElements 'com.pi4j:pi4j-plugin-gpiod:2.6.0'
-
-    implementation 'com.pi4j:pi4j-core:2.6.0'
-    implementation 'com.pi4j:pi4j-plugin-raspberrypi:2.6.0'
-    implementation 'com.pi4j:pi4j-plugin-gpiod:2.6.0'
 }
 
 test {

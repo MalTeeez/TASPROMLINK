@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import io.prometheus.client.Collector;
 import io.prometheus.client.GaugeMetricFamily;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,9 @@ public class MetricCollector extends Collector implements Collector.Describable{
 
     @Override
     public List<MetricFamilySamples> collect() {
+        //System.out.print("[" + new SimpleDateFormat("dd.MM.yy HH:mm:ss").format(new java.util.Date()) + "] ");
+        //System.out.println("Started collecting metrics");
+
         MetricFamilySamples sml_list = this.collectSMLList();
         MetricFamilySamples gpio_count = this.collectGPIOCounter();
         ArrayList<MetricFamilySamples> metrics = new ArrayList<>(
@@ -26,6 +30,8 @@ public class MetricCollector extends Collector implements Collector.Describable{
         metrics.add(sml_list);
         metrics.add(gpio_count);
 
+        //System.out.print("[" + new SimpleDateFormat("dd.MM.yy HH:mm:ss").format(new java.util.Date()) + "] ");
+        //System.out.println("Metrics were collected");
         return metrics;
     }
 
