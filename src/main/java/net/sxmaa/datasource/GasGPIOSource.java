@@ -10,19 +10,19 @@ import java.util.regex.Pattern;
 
 public class GasGPIOSource {
 
-    public static final int DIGITAL_INPUT_PIN = 16;
+    public static final int DIGITAL_INPUT_PIN = 23;
 
 
     private boolean last_state = false;
     private long current_count = 0;
-    private ScheduledExecutorService scheduler;
+    private final ScheduledExecutorService scheduler;
 
     public GasGPIOSource() {
         scheduler = Executors.newScheduledThreadPool(1);
         scheduler.scheduleAtFixedRate(() -> {
             boolean state = readPIN();
-            if (state != last_state) {
-                System.out.println("State changed! Current count: " + current_count);
+            // Are switching from false to true? basically mouseDown
+            if (state && !last_state) {
                 current_count = current_count + 1;
             }
             last_state = state;
@@ -53,7 +53,7 @@ public class GasGPIOSource {
         if (p != null) {
             BufferedReader b = new BufferedReader(new InputStreamReader(p.getInputStream()));
             StringBuilder sb = new StringBuilder();
-            String line = null;
+            String line;
 
             try {
                 while ((line = b.readLine()) != null) {
