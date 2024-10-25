@@ -35,7 +35,7 @@ public class GasGPIOSource {
 
     public Long getAndResetGasCount() {
         final long temp_store = current_count;
-        current_count = 0;
+        //current_count = 0;
         return temp_store;
     }
 
